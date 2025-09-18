@@ -40,19 +40,23 @@ It demonstrates **data engineering, natural language processing (NLP), machine l
 
 ### 1. Transformer Sentiment Model
 - **DistilBERT** encodes input text into contextual embeddings:
-  \\( h = \\text{Transformer}(x) \\)
+  <img width="275" height="48" alt="image" src="https://github.com/user-attachments/assets/f4fd46bc-39a5-4609-ae7e-4230c909ad1b" />
+
 - A classification head maps the [CLS] embedding to sentiment logits:
-  \\( z = W h_{[CLS]} + b \\)
+  <img width="225" height="50" alt="image" src="https://github.com/user-attachments/assets/8f51a598-9538-4dff-a6d7-f56fe56b7e92" />
+
 
 ### 2. Softmax for Probabilities
 - Converts logits into probabilities:
-  \\[ P(y|x) = \\frac{e^{z_y}}{\\sum_j e^{z_j}} \\]
+  <img width="242" height="74" alt="image" src="https://github.com/user-attachments/assets/cc51ed82-020d-4eb4-8089-9de8f3ac7471" />
+
 - Labels: **POSITIVE** or **NEGATIVE**
 
 ### 3. Training Objective (Cross-Entropy Loss)
-\\[ \\mathcal{L} = - \\sum_{i} y_i \\log(\\hat{y}_i) \\]
+<img width="270" height="98" alt="image" src="https://github.com/user-attachments/assets/396428ef-6986-4c37-89a3-4585e28d2570" />
 
-- Encourages predicted distribution \\( \\hat{y} \\) to match true distribution \\( y \\).
+
+- Encourages predicted distribution (Ŷ) to match true distribution y.
 
 ### 4. Evaluation Metrics
 - **Accuracy**: correct predictions / total
@@ -63,8 +67,7 @@ It demonstrates **data engineering, natural language processing (NLP), machine l
 - **Confusion Matrix**: visualization of TP, FP, TN, FN
 
 ### 5. Pipeline Intuition
-\\[ \\text{Article URL} \\to \\text{Text Extraction} \\to \\text{Tokenizer} \\to \\text{Transformer} \\to \\text{Softmax} \\to \\text{Label + Score} \\]
-
+Article URL → Text Extraction → Tokenizer → Transformer → Softmax → Label + Score
 ---
 
 ## ⚙️ Tech Stack
@@ -120,9 +123,27 @@ streamlit run streamlit_app.py
 ---
 
 ## 📊 Example Usage
-- **Text:** *"I loved this product, it was excellent!"* → POSITIVE  
-- **News URL:** Summarizes + classifies sentiment  
-- **Batch CSV:** Outputs predictions + distribution plots + metrics  
+- **Text:** *"I loved this product, it was excellent!"* → POSITIVE
+<img width="1838" height="635" alt="image" src="https://github.com/user-attachments/assets/64dc64e4-cde6-4ec5-b34b-3cb2c42ef614" />
+
+  
+- **News URL:** Summarizes + classifies sentiment
+  <img width="1857" height="693" alt="image" src="https://github.com/user-attachments/assets/7167dadb-be3c-4a56-8b6a-d898e3db79a5" />
+
+- **Batch CSV:** Outputs predictions + distribution plots + metrics
+  <img width="1884" height="917" alt="image" src="https://github.com/user-attachments/assets/63497da2-6c60-41ca-9499-7f0cd2736805" />
+  
+  Sentiment Distribution (counts):-
+  <img width="1126" height="976" alt="image" src="https://github.com/user-attachments/assets/eab0638d-e305-4262-9d04-fc2f72861bb7" />
+
+  Predicted Positive Probability (score) Distribution:-
+  <img width="1125" height="865" alt="image" src="https://github.com/user-attachments/assets/02ba3fa4-0094-4842-aaba-3918a176beb2" />
+
+  
+
+  
+
+
 
 ---
 
