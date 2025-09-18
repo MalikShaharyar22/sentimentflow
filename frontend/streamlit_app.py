@@ -18,19 +18,39 @@ import matplotlib.pyplot as plt
 # Only import nltk/newspaper when needed to avoid heavy startup work.
 # We'll lazy-import in the functions that need them.
 
-BACKEND_URL = st.secrets.get("BACKEND_URL", "http://localhost:8000")
+import os
+import requests
+import streamlit as st
+from urllib.parse import urljoin
 
-st.set_page_config(page_title="SentimentFlow", layout="wide")
-st.title("📰 SentimentFlow — AI-Powered News Sentiment Analyzer")
+# read secrets/env (Streamlit secrets preferred)
+BACKEND_URL = st.secrets.get("BACKEND_URL", os.environ.get("BACKEND_URL", "http://localhost:8000"))
+# normalize: ensure scheme present
+if not BACKEND_URL.startswith("http"):
+    BACKEND_URL = "https://" + BACKEND_URL
 
-st.markdown(
+def build_url(path: str) -> str:
+    """Safely join base BACKEND_URL with endpoint path (path may start with /)."""
+    return urljoin(BACKEND_URL.rstrip("/") + "/", path.lstrip("/"))
+
+def call_backend(endpoint: str, payload: dict, timeout: int = 300) -> dict:
     """
-Safe startup: heavy ML libs are loaded in backend. This frontend lazy-loads only what it needs.
-- Paste text
-- Single URL (summary + sentiment)
-- CSV batch
-"""
-)
+    POST JSON to backend endpoint, return parsed JSON or an error dict.
+    Use build_url to avoid path mistakes.
+    """
+    url = build_url(endpoint)
+    try:
+        resp = requests.post(url, json=payload, timeout=timeout)
+        # surface non-200 cleanedly
+        try:
+            data = resp.json()
+        except Exception:
+            data = {"_raw_response_text": resp.text}
+        if resp.status_code >= 400:
+            return {"error": f"{resp.status_code} {resp.reason}", "details": data}
+        return data
+    except requests.exceptions.RequestException as e:
+        return {"error": str(e)}
 
 
 # -------------------------------
