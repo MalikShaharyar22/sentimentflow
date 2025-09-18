@@ -5,34 +5,33 @@ import requests
 import streamlit as st
 from newspaper import Article
 
-# Ensure NLTK resources
-for resource in ["punkt", "punkt_tab"]:
-    try:
-        nltk.data.find(f"tokenizers/{resource}")
-    except LookupError:
-        nltk.download(resource)
+# frontend/streamlit_app.py (safer, lazy-loading)
+import os
+# fallback to pure-Python protobuf implementation to avoid C-extension segfaults on some hosts
+os.environ.setdefault("PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION", "python")
 
-from sklearn.metrics import (auc, classification_report,
-                             precision_recall_fscore_support, roc_auc_score,
-                             roc_curve)
+import streamlit as st
+import pandas as pd
+import requests
+import matplotlib.pyplot as plt
 
-# -------------------------------
-# Config
-# -------------------------------
-BACKEND_URL = "http://localhost:8000"  
+# Only import nltk/newspaper when needed to avoid heavy startup work.
+# We'll lazy-import in the functions that need them.
+
+BACKEND_URL = st.secrets.get("BACKEND_URL", "http://localhost:8000")
 
 st.set_page_config(page_title="SentimentFlow", layout="wide")
-st.title("📰 SentimentFlow — AI-Powered News Sentiment Analyzer")
+st.title("📰 SentimentFlow — AI-Powered News Sentiment Analyzer (Safe Start)")
 
 st.markdown(
     """
-Analyze sentiment of text or articles using a transformer model.
-Options:
-- Paste custom text
-- Provide a single article URL
-- Upload CSV with multiple URLs
+Safe startup: heavy ML libs are loaded in backend. This frontend lazy-loads only what it needs.
+- Paste text
+- Single URL (summary + sentiment)
+- CSV batch
 """
 )
+
 
 # -------------------------------
 # Helper to call backend

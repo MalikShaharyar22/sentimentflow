@@ -3,7 +3,7 @@ requests
 pandas
 matplotlib
 nltk
-protobuf==4.21.0
+protobuf
 lxml_html_clean
 lxml[html_clean]
 newspaper3k
