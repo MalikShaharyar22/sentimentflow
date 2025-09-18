@@ -1,87 +1,98 @@
-# backend/app.py
-import logging
-from typing import Any, Dict, List
-
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+from typing import List, Dict, Any
+import logging
+import os
 
-# Try to import a sentiment model wrapper from sentiment_model.py if present.
-# If not present, fallback to a simple built-in wrapper using HuggingFace pipeline.
+# Do NOT instantiate heavy models at import time. We'll lazy-load them in get_model().
+
+# Try to import local SentimentModel wrapper
 try:
-    from sentiment_model import \
-        SentimentModel  # user-provided wrapper (preferred)
+    from sentiment_model import SentimentModel
 except Exception:
-    from transformers import pipeline
+    SentimentModel = None
 
-    class SentimentModel:
-        def __init__(self, model_name: str = "distilbert-base-uncased-finetuned-sst-2-english"):
-            # initialize HF pipeline
-            self.pipeline = pipeline("sentiment-analysis", model=model_name)
-
-        def predict(self, text: str) -> Dict[str, Any]:
-            if not text:
-                return {"label": None, "score": 0.0, "prob_pos": 0.0}
-            # Hugging Face pipeline returns best-label + score (max class probability)
-            out = self.pipeline(text[:512])[0]
-            label = out.get("label", "").upper()
-            score = float(out.get("score", 0.0))
-            # Approximate prob_pos: if label is POSITIVE use score, else 1-score
-            prob_pos = score if label == "POSITIVE" else (1.0 - score)
-            return {"label": label, "score": score, "prob_pos": prob_pos}
-
-
-# Pydantic request models
+# Pydantic schemas
 class TextInput(BaseModel):
     text: str
 
-
 class BatchInput(BaseModel):
     texts: List[str]
-
 
 # Create app and enable CORS (allow all origins for dev; restrict in prod)
 app = FastAPI(title="SentimentFlow API")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # change this to your frontend origin in production
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Initialize model
 logger = logging.getLogger("uvicorn.error")
-model = SentimentModel()
 
-# Health endpoint
+# Initialize model lazily
+_model = None
+
+def get_model():
+    global _model
+    if _model is None:
+        # prefer user-provided SentimentModel class in sentiment_model.py
+        if SentimentModel is not None:
+            _model = SentimentModel()
+        else:
+            # fallback: lightweight pipeline
+            from transformers import pipeline
+            model_name = os.environ.get("HF_MODEL", "distilbert-base-uncased-finetuned-sst-2-english")
+            use_auth = os.environ.get("HF_TOKEN", None)
+            kwargs = {}
+            if use_auth:
+                kwargs["use_auth_token"] = use_auth
+            cache_dir = os.environ.get("TRANSFORMERS_CACHE", "/tmp/transformers_cache")
+            os.makedirs(cache_dir, exist_ok=True)
+            kwargs["cache_dir"] = cache_dir
+            _model = pipeline("sentiment-analysis", model=model_name, **kwargs)
+    return _model
+
 @app.get("/health")
 def health():
     return {"status": "ok"}
 
-
 @app.post("/analyze")
 def analyze(input: TextInput):
     try:
-        out = model.predict(input.text)
-        return out
+        model = get_model()
+        if hasattr(model, "predict"):
+            out = model.predict(input.text)
+            return out
+        out = model(input.text[:512])[0]
+        label = out.get("label", "").upper()
+        score = float(out.get("score", 0.0))
+        prob_pos = score if label == "POSITIVE" else (1.0 - score)
+        return {"label": label, "score": score, "prob_pos": prob_pos}
     except Exception as e:
         logger.exception("Error in /analyze")
         raise HTTPException(status_code=500, detail=str(e))
 
-
 @app.post("/batch")
 def batch(input: BatchInput):
     try:
+        model = get_model()
         results = []
         for t in input.texts:
             try:
-                res = model.predict(t)
+                if hasattr(model, "predict"):
+                    r = model.predict(t)
+                else:
+                    out = model(t[:512])[0]
+                    label = out.get("label", "").upper()
+                    score = float(out.get("score", 0.0))
+                    r = {"label": label, "score": score, "prob_pos": score if label == "POSITIVE" else (1.0 - score)}
             except Exception:
-                # ensure we return a consistent shape even if one item fails
-                res = {"label": None, "score": 0.0, "prob_pos": 0.0}
-            results.append(res)
+                r = {"label": None, "score": 0.0, "prob_pos": 0.0}
+            results.append(r)
         return {"results": results}
     except Exception as e:
         logger.exception("Error in /batch")

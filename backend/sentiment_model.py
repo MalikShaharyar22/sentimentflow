@@ -1,6 +1,6 @@
 import os
 from typing import Dict, Any
-from transformers import pipeline
+from transformers import pipeline, AutoTokenizer, AutoModelForSequenceClassification
 
 class SentimentModel:
     """
@@ -8,21 +8,38 @@ class SentimentModel:
     Uses TRANSFORMERS_CACHE (defaults to /tmp/transformers_cache) to avoid root /.cache permission issues.
     """
     def __init__(self, model_name: str = None):
-        model_name = model_name or os.environ.get("HF_MODEL", "distilbert-base-uncased-finetuned-sst-2-english")
+        model_name = model_name or os.environ.get(
+            "HF_MODEL",
+            "distilbert-base-uncased-finetuned-sst-2-english"
+        )
         hf_token = os.environ.get("HF_TOKEN", None)
-        # ensure cache dir is writable (use /tmp or a path from env)
+
+        # ensure cache dir is writable
         cache_dir = os.environ.get("TRANSFORMERS_CACHE", "/tmp/transformers_cache")
+        os.makedirs(cache_dir, exist_ok=True)
         try:
-            os.makedirs(cache_dir, exist_ok=True)
-            # make writable by everyone to avoid user mismatch on hosted environments
             os.chmod(cache_dir, 0o777)
         except Exception:
             pass
-        kwargs = {"cache_dir": cache_dir}
-        if hf_token:
-            kwargs["use_auth_token"] = hf_token
-        # create pipeline
-        self.pipe = pipeline("sentiment-analysis", model=model_name, **kwargs)
+
+        # load tokenizer & model with cache_dir
+        tokenizer = AutoTokenizer.from_pretrained(
+            model_name,
+            cache_dir=cache_dir,
+            use_auth_token=hf_token
+        )
+        model = AutoModelForSequenceClassification.from_pretrained(
+            model_name,
+            cache_dir=cache_dir,
+            use_auth_token=hf_token
+        )
+
+        # build pipeline (no cache_dir here!)
+        self.pipe = pipeline(
+            "sentiment-analysis",
+            model=model,
+            tokenizer=tokenizer
+        )
 
     def predict(self, text: str) -> Dict[str, Any]:
         if not text:
