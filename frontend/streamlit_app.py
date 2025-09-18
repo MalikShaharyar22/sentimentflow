@@ -21,7 +21,7 @@ import matplotlib.pyplot as plt
 BACKEND_URL = st.secrets.get("BACKEND_URL", "http://localhost:8000")
 
 st.set_page_config(page_title="SentimentFlow", layout="wide")
-st.title("📰 SentimentFlow — AI-Powered News Sentiment Analyzer (Safe Start)")
+st.title("📰 SentimentFlow — AI-Powered News Sentiment Analyzer")
 
 st.markdown(
     """
