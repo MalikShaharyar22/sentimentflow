@@ -1,0 +1,12 @@
+streamlit
+requests
+pandas
+matplotlib
+nltk
+protobuf==3.20.3
+lxml_html_clean
+lxml[html_clean]
+newspaper3k
+# After installing, run:
+#   python setup_nltk.py
+# to download required NLTK resources (punkt, punkt_tab).
